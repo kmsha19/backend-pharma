@@ -31,6 +31,30 @@ exports.getAppointmentsForProfessional = async (req, res) => {
 };
 
 /**
+ * @desc    Récupérer les rendez-vous pour un patient
+ * @route   GET /api/appointments/patient
+ * @access  Privé (patient)
+ */
+exports.getAppointmentsForPatient = async (req, res) => {
+  try {
+    // Vérifier le rôle de l'utilisateur
+    if (req.user.role !== 'patient') {
+      return res.status(403).json({ message: 'Accès interdit' });
+    }
+
+    // Récupérer les rendez-vous du patient
+    const appointments = await Appointment.find({ patient: req.user.id })
+      .populate('patient', 'name email')
+      .populate('professional', 'nomEtablissement adresse');
+
+    res.json(appointments);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erreur serveur');
+  }
+};
+
+/**
  * @desc    Créer un nouveau rendez-vous
  * @route   POST /api/appointments
  * @access  Privé (patient)
